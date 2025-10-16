@@ -45,7 +45,6 @@ export default function ChatView({ threadId }: ChatViewProps) {
   const [initializing, setInitializing] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [summarizing, setSummarizing] = useState(false);
-  const [pendingUserMessage, setPendingUserMessage] = useState<string | null>(null);
   const [assistantTyping, setAssistantTyping] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
@@ -112,7 +111,13 @@ export default function ChatView({ threadId }: ChatViewProps) {
 
     const content = input.trim();
     setInput("");
-    setPendingUserMessage(content);
+    const optimisticMessage: ChatMessage = {
+      id: Date.now(),
+      role: "user",
+      content,
+      created_at: new Date().toISOString(),
+    };
+    setMessages((prev) => [...prev, optimisticMessage]);
     setAssistantTyping(true);
     setLoading(true);
     try {
@@ -134,23 +139,17 @@ export default function ChatView({ threadId }: ChatViewProps) {
         ...prev,
         {
           id: Date.now(),
-          role: "user",
-          content,
-          created_at: new Date().toISOString(),
-        },
-        {
-          id: Date.now() + 1,
           role: "assistant",
           content: `오류: ${message}`,
           created_at: new Date().toISOString(),
         },
       ]);
     } finally {
-      setPendingUserMessage(null);
       setAssistantTyping(false);
       setLoading(false);
     }
   };
+
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === "Enter" && !event.shiftKey) {
@@ -254,7 +253,7 @@ export default function ChatView({ threadId }: ChatViewProps) {
                   }`}
                 >
                   <span className="mb-0.5 block text-xs font-semibold text-blue-500">
-                    {isAssistant ? "🤖 어시스턴트" : "🧒 학생"}
+                    {isAssistant ? "🤖 직업 조사 도우미" : "🧑‍🎓 학생"}
                   </span>
                   <div className="text-[15px] leading-relaxed text-slate-700">
                     <Markdown>{msg.content}</Markdown>
@@ -262,15 +261,9 @@ export default function ChatView({ threadId }: ChatViewProps) {
                 </article>
               );
             })}
-            {pendingUserMessage ? (
-              <article className="max-w-[65ch] sm:max-w-[70ch] self-end rounded-xl border border-blue-200 bg-blue-100 px-4 py-2 shadow-sm animate-pulse">
-                <span className="mb-0.5 block text-xs font-semibold text-blue-500">🧒 학생</span>
-                <div className="text-[15px] leading-relaxed text-slate-700">...</div>
-              </article>
-            ) : null}
             {assistantTyping ? (
               <article className="max-w-[65ch] sm:max-w-[70ch] self-start rounded-xl border border-blue-100 bg-white px-4 py-2 shadow-sm animate-pulse">
-                <span className="mb-0.5 block text-xs font-semibold text-blue-500">🤖 어시스턴트</span>
+                <span className="mb-0.5 block text-xs font-semibold text-blue-500">🤖 직업 조사 도우미</span>
                 <div className="text-[15px] leading-relaxed text-slate-700">...</div>
               </article>
             ) : null}

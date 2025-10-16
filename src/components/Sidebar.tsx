@@ -1,43 +1,32 @@
-﻿"use client";
+"use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import {
-  createThread,
-  listThreads,
-  patchThread,
-  type ThreadSummary,
-} from "@/lib/api";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { createThread } from "@/lib/api";
 
 const STORAGE_KEY = "careerbuddy_login";
 
+const TIPS = [
+  "처음에는 직업 이름과 왜 궁금한지 한마디로 알려 줘.",
+  "모르는 단어나 내용이 나오면 바로 물어봐도 돼.",
+  "답을 말할 때 느낀 점이나 이유를 함께 말해주면 이야기가 깊어져.",
+  "AI가 던지는 선택형 질문은 마음에 드는 걸 골라서 솔직하게 말해 봐.",
+  "대화가 끝날 땐 다음에 궁금한 걸 메모해 두면 더 쉽게 이어갈 수 있어."
+];
+
 export default function Sidebar() {
   const router = useRouter();
-  const pathname = usePathname();
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [klass, setKlass] = useState<string | null>(null);
   const [nick, setNick] = useState<string | null>(null);
-  const [threads, setThreads] = useState<ThreadSummary[]>([]);
-  const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const activeThreadId = useMemo(() => {
-    const parts = pathname?.split("/") ?? [];
-    return parts.length >= 3 ? parts[parts.length - 1] : null;
-  }, [pathname]);
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
-      const stored = JSON.parse(raw) as {
-        sessionId?: string;
-        klass?: string;
-        nick?: string;
-        authed?: boolean;
-      };
+      const stored = JSON.parse(raw) as { sessionId?: string; klass?: string; nick?: string; authed?: boolean };
       if (!stored?.authed || !stored.sessionId) return;
       setSessionId(stored.sessionId ?? null);
       setKlass(stored.klass ?? null);
@@ -47,205 +36,55 @@ export default function Sidebar() {
     }
   }, []);
 
-  const refreshThreads = useCallback(async () => {
-    if (!klass || !nick) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const { threads: items } = await listThreads(klass, nick, {
-        query: search.trim() || undefined,
-        limit: 100,
-      });
-      setThreads(items.filter((item) => !item.deleted_at));
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      setError(message);
-    } finally {
-      setLoading(false);
-    }
-  }, [klass, nick, search]);
-
-  useEffect(() => {
-    void refreshThreads();
-  }, [refreshThreads]);
-
   const handleNewThread = async () => {
     if (!sessionId) {
-      alert("먼저 로그인해 주세요.");
+      alert("먼저 입장해 주세요.");
       return;
     }
+    setCreating(true);
     try {
       const { threadId } = await createThread(sessionId);
-      await refreshThreads();
       router.push(`/chat/${threadId}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       alert(message);
+    } finally {
+      setCreating(false);
     }
   };
 
-  const grouped = useMemo(() => {
-    const pinned = threads.filter((thread) => thread.pinned);
-    const regular = threads.filter((thread) => !thread.pinned);
-    return { pinned, regular };
-  }, [threads]);
-
-  const formatter = useMemo(
-    () =>
-      new Intl.DateTimeFormat("ko-KR", {
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    []
-  );
-
   return (
-    <div className="flex h-full w-full flex-col gap-5 bg-gray-50 p-6">
+    <div className="flex h-full w-full flex-col justify-between gap-8 bg-gray-50 p-6">
       <header className="space-y-1">
-        <div className="text-lg font-semibold text-slate-900">직업 조사 도우미</div>
-        <div className="text-xs text-slate-500">
+        <div className="text-lg font-bold text-slate-900">직업 조사 도우미</div>
+        <p className="text-xs text-slate-500">
           {klass ? `${klass}반 · ${nick ?? ""}` : "입장이 필요해요"}
-        </div>
+        </p>
       </header>
 
-      <div className="space-y-3">
-        <input
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          placeholder="상담 찾기"
-          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-200"
-        />
-        <button
-          type="button"
-          onClick={handleNewThread}
-          className="w-full rounded-lg bg-blue-400 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-500"
-        >
-          새 진로상담
-        </button>
-        <button
-          type="button"
-          onClick={() => refreshThreads()}
-          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-gray-100"
-        >
-          새로고침
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={handleNewThread}
+        disabled={!sessionId || creating}
+        className="rounded-lg bg-blue-500 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-70"
+      >
+        {creating ? "새 상담 준비 중..." : "새 진로 상담 시작하기"}
+      </button>
 
-      <div className="flex-1 space-y-4 overflow-y-auto">
-        {loading && <p className="text-xs text-slate-500">상담 목록을 불러오는 중...</p>}
-        {error && <p className="text-xs text-red-500">{error}</p>}
-        {!loading && !error && threads.length === 0 && (
-          <p className="text-xs text-slate-500">아직 저장된 상담이 없어요.</p>
-        )}
+      <section className="space-y-3">
+        <h2 className="text-sm font-semibold text-blue-600">대화 팁</h2>
+        <ul className="space-y-2 text-xs leading-relaxed text-slate-600">
+          {TIPS.map((tip) => (
+            <li key={tip}>- {tip}</li>
+          ))}
+        </ul>
+      </section>
 
-        <ThreadSection
-          title="즐겨찾기"
-          threads={grouped.pinned}
-          activeId={activeThreadId}
-          formatter={formatter}
-          refresh={refreshThreads}
-        />
-        <ThreadSection
-          title="최근 상담"
-          threads={grouped.regular}
-          activeId={activeThreadId}
-          formatter={formatter}
-          refresh={refreshThreads}
-        />
-      </div>
+      <footer className="rounded-lg border border-blue-100 bg-white/80 p-4 text-[11px] leading-relaxed text-slate-500">
+        궁금한 점이 떠오르면 바로 말해 줘.
+        모르는 단어는 "이게 무슨 뜻이야?"라고 물어봐도 좋아.
+        천천히 이야기해도 충분히 기다려 줄게.
+      </footer>
     </div>
-  );
-}
-
-function ThreadSection({
-  title,
-  threads,
-  activeId,
-  formatter,
-  refresh,
-}: {
-  title: string;
-  threads: ThreadSummary[];
-  activeId: string | null;
-  formatter: Intl.DateTimeFormat;
-  refresh: () => Promise<void>;
-}) {
-  const router = useRouter();
-
-  if (threads.length === 0) return null;
-
-  return (
-    <section className="space-y-2">
-      <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-        {title}
-      </h2>
-      <ul className="space-y-2">
-        {threads.map((thread) => {
-          const isActive = thread.id === activeId;
-          return (
-            <li
-              key={thread.id}
-              className={`rounded-lg border px-3 py-2 text-sm transition-colors hover:bg-gray-100 ${
-                isActive
-                  ? "border-blue-400 bg-blue-50"
-                  : "border-transparent bg-white"
-              }`}
-            >
-              <div className="flex items-start gap-3">
-                <button
-                  onClick={() => router.push(`/chat/${thread.id}`)}
-                  className="flex-1 text-left"
-                >
-                  <div className="font-medium text-slate-900">
-                    {thread.title?.trim() || "제목 없음"}
-                  </div>
-                  <div className="text-xs text-slate-500">
-                    {formatter.format(new Date(thread.updated_at))}
-                  </div>
-                </button>
-                <div className="flex flex-col gap-2">
-                  <button
-                    onClick={async () => {
-                      try {
-                        await patchThread(thread.id, { pinned: !thread.pinned });
-                        await refresh();
-                      } catch (err) {
-                        const message = err instanceof Error ? err.message : String(err);
-                        alert(message);
-                      }
-                    }}
-                    className={`rounded-md border px-2 py-1 text-xs transition-colors ${
-                      thread.pinned
-                        ? "border-blue-400 bg-blue-100 text-blue-700"
-                        : "border-slate-300 bg-white text-slate-600 hover:bg-gray-100"
-                    }`}
-                  >
-                    {thread.pinned ? "즐겨찾기 해제" : "즐겨찾기"}
-                  </button>
-                  <button
-                    onClick={async () => {
-                      if (!confirm("이 상담을 삭제할까요?")) return;
-                      try {
-                        await patchThread(thread.id, { deleted: true });
-                        if (thread.id === activeId) router.push("/chat");
-                        await refresh();
-                      } catch (err) {
-                        const message = err instanceof Error ? err.message : String(err);
-                        alert(message);
-                      }
-                    }}
-                    className="rounded-md border border-red-300 bg-white px-2 py-1 text-xs text-red-500 transition-colors hover:bg-red-50"
-                  >
-                    삭제
-                  </button>
-                </div>
-              </div>
-            </li>
-          );
-        })}
-      </ul>
-    </section>
   );
 }

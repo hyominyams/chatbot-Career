@@ -50,7 +50,7 @@ const SYSTEM_PROMPT = [
   "도우미: 그렇지? 코딩만으로도 돈을 벌 수 있다는 게 멋있지. 그런데 로봇 개발자는 돈보다 사람을 편하게 해주는 게 더 뿌듯하대. 네가 만들고 싶은 로봇은 누구를 도와주고 싶어?",
   "",
   "학생: 몸이 불편한 사람이 밥 먹게 해주는 로봇!",
-  "도우미: 그런 아이디어 정말 멋지다. 그러려면 로봇이 섬세하게 움직여야 해서 꼼꼼함이 아주 중요해. 실패해도 다시 해보는 끈기도 필요해. 너는 어떤 편이야?",
+  "도우미: 그런 아이디어 정말 멋지다. 그러려면 로봇이 섬세하게 움직여야 해서 꼼꼼함이 아주 중요해. 실패해도 다시 해보는 끈기도 필요해. 너는 꼼꼼한 편이야, 아니면 끈기 있게 파고드는 편이야?",
   "",
   "학생: 파티쉐는 빵 만드는 사람이야?",
   "도우미: 맞아! 케이크나 쿠키 같은 달콤한 디저트를 만들어. 반죽할 때는 온도랑 시간을 잘 맞춰야 하고, 예쁜 장식도 중요해. 반죽을 만지는 것과 모양을 꾸미는 것 중에 뭐가 더 재밌어 보여?",
@@ -66,7 +66,7 @@ const SYSTEM_PROMPT = [
   "",
   "학생: 나는 음악 듣거나 강아지랑 놀아!",
   "도우미: 좋은 방법이네! 상담사도 그렇게 마음을 챙겨야 해. 그럼 다음에는 누구의 이야기를 들어주고 싶어?",
-];
+].join("\n");
 
 const USER_PROMPT = [
   "User context: 이 대화는 초등학생이 '특정 직업'에 대해 스스로 궁금증을 가지고 조사하도록 돕는 것이 목표야.",
@@ -91,7 +91,114 @@ const USER_PROMPT = [
   "- '단계', 'step' 같은 표현은 절대 쓰지 마.",
   "",
   "시스템 지침과 충돌하면 시스템 지침을 우선해.",
-];
+].join("\n");
+
+export async function POST(req: NextRequest) {
+  let payload: unknown;
+
+  try {
+    payload = await req.json();
+  } catch {
+    return NextResponse.json({ error: "잘못된 JSON 형식입니다." }, { status: 400 });
+  }
+
+  const sessionId =
+    typeof (payload as { sessionId?: unknown }).sessionId === "string"
+      ? ((payload as { sessionId?: string }).sessionId ?? "").trim()
+      : "";
+  const threadId =
+    typeof (payload as { threadId?: unknown }).threadId === "string"
+      ? ((payload as { threadId?: string }).threadId ?? "").trim()
+      : "";
+  const message =
+    typeof (payload as { message?: unknown }).message === "string"
+      ? ((payload as { message?: string }).message ?? "").trim()
+      : "";
+
+  if (!sessionId || !threadId || !message) {
+    return NextResponse.json({ error: "sessionId/threadId/message 필요" }, { status: 400 });
+  }
+
+  const [{ data: session, error: sessionError }, { data: thread, error: threadError }] =
+    await Promise.all([
+      supabaseAdmin
+        .from("sessions")
+        .select("class, nickname")
+        .eq("id", sessionId)
+        .maybeSingle(),
+      supabaseAdmin
+        .from("threads")
+        .select("class, nickname")
+        .eq("id", threadId)
+        .maybeSingle(),
+    ]);
+
+  if (sessionError || !session) {
+    return NextResponse.json({ error: "세션이 존재하지 않습니다." }, { status: 401 });
+  }
+
+  if (threadError || !thread) {
+    return NextResponse.json({ error: "스레드를 찾을 수 없습니다." }, { status: 400 });
+  }
+
+  if (thread.class !== session.class || thread.nickname !== session.nickname) {
+    return NextResponse.json({ error: "스레드 접근 권한이 없습니다." }, { status: 401 });
+  }
+
+  const { error: userInsertError } = await supabaseAdmin.from("messages").insert({
+    session_id: sessionId,
+    thread_id: threadId,
+    role: "user",
+    content: message,
+  });
+
+  if (userInsertError) {
+    return NextResponse.json({ error: userInsertError.message }, { status: 400 });
+  }
+
+  const [{ data: summaryRow }, { data: recentMessages, error: recentError }] = await Promise.all([
+    supabaseAdmin
+      .from("thread_summaries")
+      .select("summary")
+      .eq("thread_id", threadId)
+      .maybeSingle(),
+    supabaseAdmin
+      .from("messages")
+      .select("role, content")
+      .eq("thread_id", threadId)
+      .order("id", { ascending: false })
+      .limit(CONTEXT_N),
+  ]);
+
+  if (recentError) {
+    return NextResponse.json({ error: recentError.message }, { status: 400 });
+  }
+
+  const recent = (recentMessages ?? []).reverse();
+  const summaryText = summaryRow?.summary ? `\n[요약]\n${summaryRow.summary}\n` : "";
+
+  const historyText = recent
+    .map((record: ChatRecord) =>
+      `${record.role === "assistant" ? "도우미" : record.role === "system" ? "시스템" : "학생"}: ${
+        record.content
+      }`,
+    )
+    .join("\n");
+
+  const prompt = [
+    {
+      role: "system" as const,
+      content: SYSTEM_PROMPT + summaryText,
+    },
+    {
+      role: "user" as const,
+      content: USER_PROMPT,
+    },
+    {
+      role: "user" as const,
+      content: historyText ? `최근 대화\n${historyText}\n\n새 메시지: ${message}` : `새 메시지: ${message}`,
+    },
+  ];
 
   try {
     const completion = await llm.chat.completions.create({
@@ -114,9 +221,7 @@ const USER_PROMPT = [
   } catch (error: unknown) {
     console.error("[api/chat] Upstage request failed:", error);
     const messageText =
-      error instanceof Error && error.message
-        ? error.message
-        : "예상치 못한 오류가 발생했습니다.";
+      error instanceof Error && error.message ? error.message : "예상치 못한 오류가 발생했습니다.";
 
     return NextResponse.json({ error: messageText }, { status: 500 });
   }

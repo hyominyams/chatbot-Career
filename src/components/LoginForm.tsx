@@ -19,7 +19,7 @@ export default function LoginForm() {
     <div className="min-h-screen flex items-center justify-center bg-blue-100 p-6">
       <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-md">
         <h1 className="mb-6 text-center text-2xl font-bold text-gray-800">
-          CareerBuddy 진로수업 입장
+          직업 조사 도우미 입장
         </h1>
         <form className="space-y-5" onSubmit={handleSubmit}>
           <label className="block text-sm font-medium text-gray-700">

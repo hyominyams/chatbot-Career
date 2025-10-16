@@ -57,8 +57,8 @@ export default function LoginPage() {
       <div className="w-full max-w-sm rounded-xl bg-white p-8 shadow-md">
         <div className="mb-6 text-center space-y-1">
           <div className="text-4xl">🔑</div>
-          <h1 className="text-xl font-bold text-blue-500">CareerBuddy 진로수업</h1>
-          <p className="text-sm text-slate-500">반/닉네임/비밀번호를 입력하면 진로 탐구 대화를 시작할 수 있어요.</p>
+          <h1 className="text-xl font-bold text-blue-500">직업 조사 도우미</h1>
+          <p className="text-sm text-slate-500">반/닉네임/비밀번호를 입력하면 직업 탐구 대화를 시작할 수 있어요.</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4 text-sm text-slate-700">
           <label className="block space-y-1">

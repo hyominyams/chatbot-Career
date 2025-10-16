@@ -235,7 +235,7 @@ export default function ChatView({ threadId }: ChatViewProps) {
             <dd>{conversationStats.userCount}</dd>
           </div>
           <div className="flex items-center justify-between">
-            <dt className="font-medium text-slate-500">CareerBuddy 응답</dt>
+            <dt className="font-medium text-slate-500">직업 조사 도우미 응답</dt>
             <dd>{conversationStats.assistantCount}</dd>
           </div>
           <div className="flex items-center justify-between">
@@ -250,7 +250,7 @@ export default function ChatView({ threadId }: ChatViewProps) {
         <ul className="space-y-1 leading-relaxed">
           <li>- 궁금한 직업 이름과 알고 싶은 점을 차근차근 적어 보세요.</li>
           <li>- "요약 갱신" 버튼으로 긴 대화를 깔끔하게 정리할 수 있어요.</li>
-          <li>- 막히면 CareerBuddy가 제시하는 질문을 골라서 답해 보세요.</li>
+          <li>- 막히면 직업 조사 도우미가 제시하는 질문을 골라서 답해 보세요.</li>
         </ul>
       </section>
 

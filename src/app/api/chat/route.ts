@@ -7,7 +7,7 @@ type ChatRecord = {
   content: string;
 };
 
-const MODEL = process.env.UPSTAGE_MODEL ?? "solar-pro-2";
+const MODEL = process.env.UPSTAGE_MODEL ?? "solar-pro2";
 const CONTEXT_N = Number(process.env.CHAT_CONTEXT_LIMIT ?? 32);
 
 const SYSTEM_PROMPT = [

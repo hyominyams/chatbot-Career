@@ -177,34 +177,6 @@ export default function ChatView({ threadId }: ChatViewProps) {
     [messages]
   );
 
-  const conversationStats = useMemo(() => {
-    let userCount = 0;
-    let assistantCount = 0;
-    messages.forEach((msg) => {
-      if (msg.role === "assistant") {
-        assistantCount += 1;
-      } else if (msg.role === "user") {
-        userCount += 1;
-      }
-    });
-    return {
-      userCount,
-      assistantCount,
-      total: messages.length,
-    };
-  }, [messages]);
-
-  const lastMessageTime = useMemo(() => {
-    if (messages.length === 0) return "-";
-    const latest = messages[messages.length - 1]?.created_at;
-    if (!latest) return "-";
-    try {
-      return new Date(latest).toLocaleString();
-    } catch {
-      return latest;
-    }
-  }, [messages]);
-
   if (!session) {
     return (
       <div className="flex h-full items-center justify-center bg-white text-sm text-slate-600">
@@ -213,58 +185,20 @@ export default function ChatView({ threadId }: ChatViewProps) {
     );
   }
 
+  const conversationTips = [
+    "궁금한 직업 이름이나 관심 생긴 이유를 먼저 들려줘.",
+    "모르는 단어나 표현이 나오면 바로 물어봐도 돼.",
+    "답할 때 느낀 점이나 궁금한 점을 함께 말해주면 더 깊이 이야기할 수 있어.",
+    "대답 뒤에는 왜 그렇게 생각했는지도 짧게 덧붙여줘.",
+  ];
+
   const sidebarSections = (
-    <div className="flex flex-col gap-4 text-xs text-slate-600">
-      <section className="space-y-2">
-        <h2 className="text-sm font-semibold text-blue-600">대화 정보</h2>
-        <dl className="space-y-1">
-          <div className="flex items-center justify-between">
-            <dt className="font-medium text-slate-500">반</dt>
-            <dd>{session.klass}</dd>
-          </div>
-          <div className="flex items-center justify-between">
-            <dt className="font-medium text-slate-500">닉네임</dt>
-            <dd>{session.nick}</dd>
-          </div>
-          <div className="flex items-center justify-between">
-            <dt className="font-medium text-slate-500">총 메시지</dt>
-            <dd>{conversationStats.total}</dd>
-          </div>
-          <div className="flex items-center justify-between">
-            <dt className="font-medium text-slate-500">학생 발화</dt>
-            <dd>{conversationStats.userCount}</dd>
-          </div>
-          <div className="flex items-center justify-between">
-            <dt className="font-medium text-slate-500">직업 조사 도우미 응답</dt>
-            <dd>{conversationStats.assistantCount}</dd>
-          </div>
-          <div className="flex items-center justify-between">
-            <dt className="font-medium text-slate-500">마지막 활동</dt>
-            <dd className="text-right">{lastMessageTime}</dd>
-          </div>
-        </dl>
-      </section>
-
-      <section className="space-y-2">
-        <h2 className="text-sm font-semibold text-blue-600">활용 팁</h2>
-        <ul className="space-y-1 leading-relaxed">
-          <li>- 궁금한 직업 이름과 알고 싶은 점을 차근차근 적어 보세요.</li>
-          <li>- "요약 갱신" 버튼으로 긴 대화를 깔끔하게 정리할 수 있어요.</li>
-          <li>- 막히면 직업 조사 도우미가 제시하는 질문을 골라서 답해 보세요.</li>
-        </ul>
-      </section>
-
-      <section className="space-y-2">
-        <h2 className="text-sm font-semibold text-blue-600">기능 빠른 실행</h2>
-        <button
-          type="button"
-          onClick={handleSummarize}
-          disabled={summarizing}
-          className="w-full rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-600 transition-colors hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-70"
-        >
-          {summarizing ? "요약 중..." : "요약 바로 갱신"}
-        </button>
-      </section>
+    <div className="space-y-2 text-xs leading-relaxed text-slate-600">
+      <ul className="space-y-2">
+        {conversationTips.map((tip) => (
+          <li key={tip}>- {tip}</li>
+        ))}
+      </ul>
     </div>
   );
 
@@ -286,7 +220,7 @@ export default function ChatView({ threadId }: ChatViewProps) {
               className="rounded-lg border border-blue-200 bg-white px-3 py-1 text-xs font-semibold text-blue-600 transition-colors hover:bg-blue-50"
               aria-expanded={sidebarOpen}
             >
-              {sidebarOpen ? "사이드바 닫기" : "사이드바 열기"}
+              {sidebarOpen ? "대화 팁 숨기기" : "대화 팁 열기"}
             </button>
             <button
               type="button"
@@ -353,8 +287,8 @@ export default function ChatView({ threadId }: ChatViewProps) {
             <div className="fixed right-0 top-24 z-40 flex h-[calc(100vh-6rem)] w-64 flex-col border-l border-blue-100 bg-white/95 p-4 shadow-xl md:hidden">
               <div className="mb-3 flex items-center justify-between">
                 <div>
-                  <h2 className="text-sm font-semibold text-blue-600">사이드 패널</h2>
-                  <p className="text-xs text-slate-500">대화 흐름과 도움말을 확인해 보세요.</p>
+                  <h2 className="text-sm font-semibold text-blue-600">대화 팁</h2>
+                  <p className="text-xs text-slate-500">이야기를 이어가는 데 도움이 되는 방법이야.</p>
                 </div>
                 <button
                   type="button"
@@ -370,8 +304,8 @@ export default function ChatView({ threadId }: ChatViewProps) {
             </div>
             <aside className="hidden w-72 shrink-0 border-l border-blue-100 bg-white/80 p-5 text-sm text-slate-600 shadow-[0_0_12px_rgba(15,23,42,0.05)] md:flex md:flex-col">
               <header className="mb-4">
-                <h2 className="text-sm font-semibold text-blue-600">사이드 패널</h2>
-                <p className="text-xs text-slate-500">대화 흐름과 도움말을 확인해 보세요.</p>
+                <h2 className="text-sm font-semibold text-blue-600">대화 팁</h2>
+                <p className="text-xs text-slate-500">대답할 때 도움이 될 만한 방법이야.</p>
               </header>
               <div className="flex-1 overflow-y-auto">
                 {sidebarSections}

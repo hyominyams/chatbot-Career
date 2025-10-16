@@ -102,7 +102,7 @@ export default function Sidebar() {
   );
 
   return (
-    <aside className="flex h-full w-72 flex-col gap-5 border-r border-slate-200 bg-gray-50 p-6">
+    <div className="flex h-full w-full flex-col gap-5 bg-gray-50 p-6">
       <header className="space-y-1">
         <div className="text-lg font-semibold text-slate-900">직업 조사 도우미</div>
         <div className="text-xs text-slate-500">
@@ -155,7 +155,7 @@ export default function Sidebar() {
           refresh={refreshThreads}
         />
       </div>
-    </aside>
+    </div>
   );
 }
 

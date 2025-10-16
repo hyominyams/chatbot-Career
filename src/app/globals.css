@@ -1,0 +1,13 @@
+﻿@config "../../tailwind.config.ts";
+@import url("https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap");
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  font-family: "Noto Sans KR", "Jua", ui-sans-serif, system-ui;
+  background: #f0f7ff;
+  color: #1f2937;
+}

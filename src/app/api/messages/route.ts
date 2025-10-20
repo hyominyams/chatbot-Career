@@ -1,6 +1,9 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
+export const runtime = "nodejs";
+export const preferredRegion = ["icn1"];
+
 const DEFAULT_LIMIT = 50;
 const MESSAGE_ROLES = new Set(["user", "assistant"]);
 

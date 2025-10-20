@@ -1,6 +1,9 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
+export const runtime = "nodejs";
+export const preferredRegion = ["icn1"];
+
 export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }

@@ -2,6 +2,9 @@
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { randomUUID } from "crypto";
 
+export const runtime = "nodejs";
+export const preferredRegion = ["icn1"];
+
 export async function POST(req: NextRequest) {
   const { klass, password, nickname } = await req.json();
   if (!klass || !password || !nickname) {

@@ -3,6 +3,9 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { llm } from "@/lib/llm";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 
+export const runtime = "nodejs";
+export const preferredRegion = ["icn1"];
+
 type ChatRecord = {
   role: string;
   content: string;
@@ -38,7 +41,7 @@ const USER_PROMPT = [
   "- 학생과 대화를 주고 받으며 학생의 질문에 대한 구체적인 답변을 제시해.",
   "- 다뤄야 할 핵심 내용을 기억하고, 설명이 충분할 때는 질문 없이 마무리해도 돼.",
   "- 추가 탐색이 필요할 때만 짧은 질문을 덧붙여 다음 대화를 이어가.",
-  "- 한 응답에서는 학생 질문을 토대로 위 핵심 주제 중 하나에만 집중해서 설명해. 나머지 주제는 다음 턴으로 미뤄.",
+  "- 한 응답에서는 학생 질문을 토대로 위 핵심 주제 중 하나에만 집중해서 설명해. 나머지 주제는 다음 대화로 미뤄.",
   "- 답변을 충분히 한 뒤, 질문이 필요하다고 판단되면 아래 기준에 따라 질문해:",
   "  - 지금 설명한 내용과 직접 연결된 구체적인 포인트를 기준으로 묻어 학생이 스스로 생각을 이어가도록 도와.",
   "  - 학생이 이미 한 말이나 쓴 표현을 되짚어 자연스럽게 되묻고, 특정 질문을 선택할 땐 다른 기준과 겹치지 않는 하나만 골라 사용해.",

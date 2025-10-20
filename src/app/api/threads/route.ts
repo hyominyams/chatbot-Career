@@ -1,6 +1,9 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
+export const runtime = "nodejs";
+export const preferredRegion = ["icn1"];
+
 const DEFAULT_LIMIT = 30;
 
 export async function GET(req: NextRequest) {

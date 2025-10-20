@@ -2,6 +2,9 @@
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { llm } from "@/lib/llm";
 
+export const runtime = "nodejs";
+export const preferredRegion = ["icn1"];
+
 const KEEP_RECENT = 12;
 
 export async function POST(req: NextRequest) {

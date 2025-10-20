@@ -33,6 +33,7 @@ export default function LoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ klass, nickname, password }),
       });
+
       const payload: LoginResponse & { error?: string } = await response.json();
       if (!response.ok || !payload.sessionId) {
         throw new Error(payload.error || "로그인에 실패했어.");
@@ -57,7 +58,7 @@ export default function LoginPage() {
         <div className="mb-6 text-center space-y-1">
           <div className="text-4xl">🤖</div>
           <h1 className="text-xl font-bold text-blue-500">직업 조사 챗봇</h1>
-          <p className="text-sm text-slate-500">학급·닉네임·암호를 입력하면 바로 대화를 시작할 수 있어.</p>
+          <p className="text-sm text-slate-500">학급·닉네임·암호를 입력하면 진로 대화를 바로 시작할 수 있어.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 text-sm text-slate-700">
@@ -105,7 +106,7 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full rounded-lg bg-blue-400 py-2 text-sm font-bold text-white shadow transition-colors hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {loading ? "잠시만 기다려 줘..." : "대화 시작하기"}
+            {loading ? "잠깐만 기다려 줘..." : "대화 시작하기"}
           </button>
         </form>
       </div>

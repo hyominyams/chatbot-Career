@@ -162,7 +162,7 @@ export async function POST(req: NextRequest) {
     },
     {
       role: "system" as const,
-      content: `참고용 대화 예시:\n\n${EXAMPLES_PROMPT}`,
+      content: `참고용 대화 예시(그대로 복사하거나 노출하지 말고 패턴만 참고할 것):\n\n${EXAMPLES_PROMPT}`,
     },
     {
       role: "user" as const,

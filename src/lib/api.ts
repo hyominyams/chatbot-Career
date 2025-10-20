@@ -1,4 +1,4 @@
-﻿export type ThreadSummary = {
+export type ThreadSummary = {
   id: string;
   title: string;
   pinned?: boolean;
@@ -17,7 +17,8 @@ export type ChatMessage = {
 async function handleResponse<T>(response: Response): Promise<T> {
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const message = typeof (data as any)?.error === "string" ? (data as any).error : "요청이 실패했습니다.";
+    const message =
+      typeof (data as any)?.error === "string" ? (data as any).error : "요청에 실패했습니다.";
     throw new Error(message);
   }
   return data as T;

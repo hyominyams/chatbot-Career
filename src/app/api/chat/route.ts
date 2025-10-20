@@ -3,11 +3,14 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { llm } from "@/lib/llm";
 import { readFileSync } from "fs";
 import { join } from "path";
+import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 
 type ChatRecord = {
   role: string;
   content: string;
 };
+
+type LLMMessage = Extract<ChatCompletionMessageParam, { role: "system" | "user" | "assistant" }>;
 
 const MODEL = process.env.UPSTAGE_MODEL ?? "solar-pro2";
 const CONTEXT_N = Number(process.env.CHAT_CONTEXT_LIMIT ?? 32);
@@ -149,39 +152,39 @@ export async function POST(req: NextRequest) {
 
   const isFirstMessage = historyRecords.length === 0;
 
-  const historyMessages = historyRecords.map((record: ChatRecord) => ({
+  const historyMessages: LLMMessage[] = historyRecords.map((record: ChatRecord) => ({
     role: record.role === "assistant" ? "assistant" : "user",
     content: record.content,
   }));
 
-  const prompt = [
+  const prompt: LLMMessage[] = [
     {
-      role: "system" as const,
+      role: "system",
       content: SYSTEM_PROMPT + summaryText,
     },
     {
-      role: "system" as const,
+      role: "system",
       content: "대화 연결 지침: 주어진 이전 메시지를 자연스럽게 이어서 답변해.",
     },
     {
-      role: "system" as const,
+      role: "system",
       content: `대화 시작 규칙(최우선): FIRST_MESSAGE=${isFirstMessage ? "true" : "false"}. FIRST_MESSAGE가 true면 인사 없이 "어떤 것이 궁금하니?" 한 문장만 출력하고, 이 턴에 한해 형식 규칙은 무시해.`,
     },
     {
-      role: "system" as const,
+      role: "system",
       content: "질문 규칙: 각 답변에서 질문은 하나만, 물음표도 한 번만 사용해.",
     },
     {
-      role: "system" as const,
+      role: "system",
       content: `참고용 대화 예시(그대로 복사하거나 노출하지 말고 답변 내용, 말투 등만 참고할 것):\n\n${EXAMPLES_PROMPT}`,
     },
     {
-      role: "user" as const,
+      role: "user",
       content: USER_PROMPT,
     },
     ...historyMessages,
     {
-      role: "user" as const,
+      role: "user",
       content: message,
     },
   ];

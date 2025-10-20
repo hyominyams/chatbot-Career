@@ -75,7 +75,7 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-blue-200 to-blue-100 flex items-center justify-center p-6">
       <div className="w-full max-w-md rounded-2xl bg-white/90 shadow-xl backdrop-blur-sm p-8">
         <h1 className="text-3xl font-bold text-gray-800 text-center mb-6">
-          직업 조사 챗봇 입장
+          직업 조사 챗봇
         </h1>
         <p className="text-sm text-gray-500 text-center mb-8">
           반과 닉네임, 비밀번호를 입력하면 직업 탐구 대화를 시작할 수 있어요.
@@ -125,7 +125,7 @@ export default function Home() {
             disabled={submitting}
             className="w-full rounded-lg bg-blue-400 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {submitting ? "입장 중..." : "입장하기"}
+            {submitting ? "확인 중..." : "시작하기"}
           </button>
         </form>
       </div>

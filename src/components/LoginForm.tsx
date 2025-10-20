@@ -19,7 +19,7 @@ export default function LoginForm() {
     <div className="min-h-screen flex items-center justify-center bg-blue-100 p-6">
       <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-md">
         <h1 className="mb-6 text-center text-2xl font-bold text-gray-800">
-          직업 조사 챗봇 입장
+          직업 조사 챗봇
         </h1>
         <form className="space-y-5" onSubmit={handleSubmit}>
           <label className="block text-sm font-medium text-gray-700">
@@ -63,7 +63,7 @@ export default function LoginForm() {
             type="submit"
             className="w-full rounded-lg bg-blue-400 py-3 font-semibold text-white transition-colors hover:bg-blue-500"
           >
-            입장하기
+            시작하기
           </button>
         </form>
       </div>

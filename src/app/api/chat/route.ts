@@ -140,16 +140,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: recentError.message }, { status: 400 });
   }
 
-  const recent = (recentMessages ?? []).reverse();
+  const chronological = (recentMessages ?? []).reverse();
+  const latest = chronological.at(-1);
+  const latestIsCurrentUser =
+    latest?.role === "user" && (latest.content?.trim() ?? "") === message.trim();
+  const historyRecords = latestIsCurrentUser ? chronological.slice(0, -1) : chronological;
   const summaryText = summaryRow?.summary ? `\n[요약]\n${summaryRow.summary}\n` : "";
 
-  const historyText = recent
-    .map((record: ChatRecord) =>
-      `${record.role === "assistant" ? "도우미" : record.role === "system" ? "시스템" : "학생"}: ${record.content}`,
-    )
-    .join("\n");
+  const isFirstMessage = historyRecords.length === 0;
 
-  const isFirstMessage = historyText.trim().length === 0;
+  const historyMessages = historyRecords.map((record: ChatRecord) => ({
+    role: record.role === "assistant" ? "assistant" : "user",
+    content: record.content,
+  }));
 
   const prompt = [
     {
@@ -162,7 +165,7 @@ export async function POST(req: NextRequest) {
     },
     {
       role: "system" as const,
-      content: `첫 대화 여부: FIRST_MESSAGE=${isFirstMessage ? "true" : "false"}. FIRST_MESSAGE가 true면 인사 대신 "어떤 것이 궁금하니?" 한 문장으로만 질문하고 다른 내용은 말하지 마.`,
+      content: `대화 시작 규칙(최우선): FIRST_MESSAGE=${isFirstMessage ? "true" : "false"}. FIRST_MESSAGE가 true면 인사 없이 "어떤 것이 궁금하니?" 한 문장만 출력하고, 이 턴에 한해 형식 규칙은 무시해.`,
     },
     {
       role: "system" as const,
@@ -176,9 +179,10 @@ export async function POST(req: NextRequest) {
       role: "user" as const,
       content: USER_PROMPT,
     },
+    ...historyMessages,
     {
       role: "user" as const,
-      content: historyText ? `최근 대화:\n${historyText}\n\n새 메시지: ${message}` : `새 메시지: ${message}`,
+      content: message,
     },
   ];
 

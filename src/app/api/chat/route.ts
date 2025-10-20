@@ -10,7 +10,7 @@ type ChatRecord = {
 
 type LLMMessage = Extract<ChatCompletionMessageParam, { role: "system" | "user" | "assistant" }>;
 
-const MODEL = process.env.UPSTAGE_MODEL ?? "solar-pro2";
+const MODEL = process.env.UPSTAGE_MODEL ?? "solar-mini";
 const CONTEXT_N = Number(process.env.CHAT_CONTEXT_LIMIT ?? 32);
 
 const SYSTEM_PROMPT = [
@@ -38,9 +38,9 @@ const USER_PROMPT = [
   "대화 흐름:",
   "- 학생과 대화하며 학생이 자연스럽게 직업에 대해 자세히 조사할 수 있도록 적절한 답변 및 질문을 해줘.",
   "",
-  "다뤄야 할 핵심 내용:**하나의 응답에는 한 가지 주제를 중심으로 답변, 이후 학생의 응답에 따라 다른 주제로 변경. 가급적 아래 순서에 따라 차근차근 접근**",
-  "- 무슨 일을 하는지",
-  "- 돈은 어떻게 버는지 (구조 위주로 설명)",
+  "다뤄야 할 핵심 내용:**하나의 응답에는 한 가지 주제를 중심으로 대화해, 이후 학생의 응답에 따라 다른 주제로 자연스럽게 변경해주고. 가급적 아래 순서에 따라 차근차근 접근**",
+  "- 직업이 하는 일",
+  "- 돈은 버는 방법 (구조 위주로 설명)",
   "- 왜 가치 있고 보람 있는지",
   "- 필요한 성격·능력·습관",
   "- 지금부터 할 수 있는 준비나 체험",
@@ -51,7 +51,6 @@ const USER_PROMPT = [
   "- 마크다운, 표, 불릿 없이 자연스러운 문장으로만 말해.",
   "- '단계', 'step' 같은 표현은 절대 쓰지 마.",
   "",
-  "시스템 지침과 충돌하면 시스템 지침을 우선해.",
   "모르는 단어나 개념이 나오면 같은 흐름 안에서 쉬운 예시로 설명하고 바로 질문으로 이어가.",
   "",
   "이 지침을 따르며 아래 대화를 이어가.",

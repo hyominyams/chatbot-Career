@@ -253,7 +253,7 @@ export default function ChatView({ threadId }: ChatViewProps) {
                   }`}
                 >
                   <span className="mb-0.5 block text-xs font-semibold text-blue-500">
-                    {isAssistant ? "🤖 직업 조사 도우미" : "🧑‍🎓 학생"}
+                    {isAssistant ? "🤖 직업 조사 챗봇" : "🧑‍🎓 학생"}
                   </span>
                   <div className="text-[15px] leading-relaxed text-slate-700">
                     <Markdown>{msg.content}</Markdown>
@@ -263,7 +263,7 @@ export default function ChatView({ threadId }: ChatViewProps) {
             })}
             {assistantTyping ? (
               <article className="max-w-[65ch] sm:max-w-[70ch] self-start rounded-xl border border-blue-100 bg-white px-4 py-2 shadow-sm animate-pulse">
-                <span className="mb-0.5 block text-xs font-semibold text-blue-500">🤖 직업 조사 도우미</span>
+                <span className="mb-0.5 block text-xs font-semibold text-blue-500">🤖 직업 조사 챗봇</span>
                 <div className="text-[15px] leading-relaxed text-slate-700">...</div>
               </article>
             ) : null}
@@ -336,3 +336,4 @@ export default function ChatView({ threadId }: ChatViewProps) {
     </div>
   );
 }
+

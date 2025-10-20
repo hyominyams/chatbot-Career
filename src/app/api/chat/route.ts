@@ -1,8 +1,6 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { llm } from "@/lib/llm";
-import { readFileSync } from "fs";
-import { join } from "path";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 
 type ChatRecord = {
@@ -14,8 +12,6 @@ type LLMMessage = Extract<ChatCompletionMessageParam, { role: "system" | "user" 
 
 const MODEL = process.env.UPSTAGE_MODEL ?? "solar-pro2";
 const CONTEXT_N = Number(process.env.CHAT_CONTEXT_LIMIT ?? 32);
-const EXAMPLES_PATH = join(process.cwd(), "src", "app", "api", "chat", "examples.txt");
-const EXAMPLES_PROMPT = readFileSync(EXAMPLES_PATH, "utf-8").trim();
 
 const SYSTEM_PROMPT = [
   "# SYSTEM — 직업 조사 도우미 (최상위 정책)",
@@ -173,10 +169,6 @@ export async function POST(req: NextRequest) {
     {
       role: "system",
       content: "질문 규칙: 각 답변에서 질문은 하나만, 물음표도 한 번만 사용해.",
-    },
-    {
-      role: "system",
-      content: `참고용 대화 예시(그대로 복사하거나 노출하지 말고 답변 내용, 말투 등만 참고할 것):\n\n${EXAMPLES_PROMPT}`,
     },
     {
       role: "user",

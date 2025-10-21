@@ -239,8 +239,8 @@ export async function POST(req: NextRequest) {
     const completion = await llm.chat.completions.create({
       model: MODEL,
       messages: prompt,
-      temperature: 0.7,
-      max_tokens: 600,
+      temperature: 0.5,
+      max_tokens: 200,
     });
 
     const content = completion.choices[0]?.message?.content ?? "(응답 없음)";

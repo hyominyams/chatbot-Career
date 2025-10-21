@@ -1,5 +1,15 @@
 ﻿# Agent Guide — CareerBuddy
 
+## 2025-10 Operations Notes
+- /api/chat defaults to Upstage `solar-mini` (`UPSTAGE_MODEL` overrides). Temperature 0.5, max_tokens 600, context limit controlled by `CHAT_CONTEXT_LIMIT` (default 32).
+- SYSTEM/USER prompts enforce 3-4 sentence (~250 char) replies, one topic per turn, and they must wait for student requests before switching topics. First "what does this job do?" style questions are answered only with the job-duty topic before moving on.
+- First turn accepts an empty `message`; when empty the user row is skipped and the canned greeting in `firstResponse` is returned.
+- All API route handlers (`/api/chat`, `/api/login`, `/api/messages`, `/api/context`, `/api/threads`, `/api/threads/[id]`, `/api/summarize`) export `runtime = "nodejs"` and `preferredRegion = ["icn1"]` to avoid iad1 outages.
+- Login UI copy now reads "Career chatbot" with "Start" buttons instead of "Enter".
+- Production 500/502/429 incidents were traced to missing Supabase/Upstage env vars. Confirm `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_KEY`, and `UPSTAGE_API_KEY` before deploy; missing Supabase URL triggers `supabaseUrl is required.` at cold start.
+- When the Vercel dashboard is unavailable, redeploy through the CLI (`vercel deploy --prod`).
+
+
 ## 제품 개요
 - 대상: 초등학생의 직업 탐구를 돕는 진로 조사 챗봇.
 - 목표: 학생이 스스로 궁금증을 확장하도록 돕고, 안전하고 따뜻한 반말 대화로 직업 정보를 안내.

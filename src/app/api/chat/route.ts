@@ -13,7 +13,7 @@ type ChatRecord = {
 
 type LLMMessage = Extract<ChatCompletionMessageParam, { role: "system" | "user" | "assistant" }>;
 
-const MODEL = process.env.UPSTAGE_MODEL ?? "solar-mini";
+const MODEL = process.env.UPSTAGE_MODEL ?? "solar-pro2";
 const CONTEXT_N = Number(process.env.CHAT_CONTEXT_LIMIT ?? 32);
 
 const SYSTEM_PROMPT = [
@@ -228,8 +228,8 @@ export async function POST(req: NextRequest) {
     const completion = await llm.chat.completions.create({
       model: MODEL,
       messages: prompt,
-      temperature: 0.7,
-      max_tokens: 300,
+      temperature: 0.5,
+      max_tokens: 200,
     });
 
     const content = completion.choices[0]?.message?.content ?? "(응답 없음)";
